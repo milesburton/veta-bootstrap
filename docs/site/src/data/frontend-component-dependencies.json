@@ -1,0 +1,24 @@
+{
+  "totalComponents": 3,
+  "totalEdges": 2,
+  "nodes": [
+    {
+      "name": "App",
+      "path": "App.tsx",
+      "importCount": 1,
+      "importedByCount": 1
+    },
+    {
+      "name": "Badge",
+      "path": "components/Badge.tsx",
+      "importCount": 0,
+      "importedByCount": 1
+    },
+    {
+      "name": "main",
+      "path": "main.tsx",
+      "importCount": 1,
+      "importedByCount": 0
+    }
+  ]
+}

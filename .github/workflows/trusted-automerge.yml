@@ -1,0 +1,55 @@
+name: PR Auto-Approve and Auto-Merge
+
+# Requires a BOT_PAT repo secret: a personal access token with repo scope,
+# belonging to a bot/service account (not the default GITHUB_TOKEN). Actions
+# taken with GITHUB_TOKEN don't raise workflow events for other workflows,
+# so PRs opened by automation (e.g. release-please) never trigger this
+# workflow unless they're authored using a PAT. See README.md.
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+
+jobs:
+  trusted-automerge:
+    if: >-
+      !github.event.pull_request.draft &&
+      github.event.pull_request.base.ref == 'main' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      # Wait for all REQUIRED status checks to pass before approving. The
+      # approval is auto-dismissed by branch protection on every new push
+      # (dismiss_stale_reviews), so a fresh run gates the approval on a
+      # fresh green build rather than approving the instant the PR opens.
+      - name: Wait for required checks to pass
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          for i in $(seq 1 30); do
+            if gh pr checks "$PR_URL" --required >/dev/null 2>&1; then
+              break
+            fi
+            echo "Required checks not registered yet (attempt $i)…"
+            sleep 10
+          done
+          gh pr checks "$PR_URL" --required --watch --fail-fast --interval 15
+
+      - name: Auto approve trusted PR
+        uses: hmarr/auto-approve-action@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Enable auto-merge once checks pass
+        env:
+          GH_TOKEN: ${{ secrets.BOT_PAT }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          gh pr merge "$PR_URL" --auto --squash --delete-branch || \
+          gh pr merge "$PR_URL" --auto --merge --delete-branch

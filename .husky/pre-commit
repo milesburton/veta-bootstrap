@@ -1,0 +1,103 @@
+#!/bin/sh
+
+set -e
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+
+echo "Pre-commit checks..."
+
+echo "  [1/6] Verifying clean working directory..."
+# Block unstaged changes to tracked files. Staged changes are expected:
+# those are what we're about to commit. Using `git diff-index HEAD` here
+# would also flag the staged files and make any normal commit fail.
+if ! git diff --quiet; then
+  echo "ERROR: You have unstaged changes to tracked files."
+  echo "Please stage or stash them before committing:"
+  git diff --name-only
+  exit 1
+fi
+
+# Steps 2-4 detect and run whatever your root package.json defines. They are
+# no-ops (not failures) if a script isn't present, so this hook works from
+# day one on an empty project and tightens up as you add lint/test scripts.
+cd "$REPO_ROOT"
+
+run_npm_script_if_present() {
+  script_name="$1"
+  step_label="$2"
+  if [ -f package.json ] && grep -q "\"$script_name\"" package.json 2>/dev/null; then
+    echo "  $step_label"
+    npm run "$script_name" --silent
+  else
+    echo "  $step_label, no \"$script_name\" script in package.json, skipping."
+  fi
+}
+
+run_npm_script_if_present "lint" "[2/6] Lint..."
+run_npm_script_if_present "typecheck" "[3/6] Type-check..."
+run_npm_script_if_present "test" "[4/6] Unit tests..."
+
+echo "  [5/6] Docs drift + validation (docs/site)..."
+# Only runs when the changeset touches docs/, and only when docs/site's
+# generator scripts exist. This bootstrap ships docs/site/scripts/generate.mjs
+# as a stub; wire in real generators as your project grows derived docs
+# (an API reference generated from an OpenAPI spec, a component catalogue,
+# etc.), following the pattern already there.
+if git diff --cached --name-only | grep -qE '^docs/'; then
+  if [ -d "$REPO_ROOT/docs/site/node_modules" ]; then
+    if [ -f "$REPO_ROOT/docs/site/scripts/generate.mjs" ]; then
+      (cd "$REPO_ROOT/docs/site" && npm run generate >/dev/null 2>&1) || true
+      cd "$REPO_ROOT"
+      if ! git diff --quiet -- docs/site/src; then
+        echo "ERROR: Generated docs files are out of sync with source."
+        echo "The following files would change after running 'npm run generate':"
+        git diff --name-only -- docs/site/src
+        echo ""
+        echo "Stage and re-commit:"
+        echo "  git add docs/site"
+        exit 1
+      fi
+    fi
+
+    echo "    Private IPs in public docs..."
+    # docs/site/src/ is published publicly (GitHub Pages or similar), so
+    # reject RFC1918 addresses (10/8, 172.16/12, 192.168/16) that would
+    # advertise internal infrastructure. Loopback (127/8) is excluded,
+    # it is a generic "this machine" address and leaks nothing.
+    if grep -rnE '\b(10\.[0-9]+\.[0-9]+\.[0-9]+|172\.(1[6-9]|2[0-9]|3[01])\.[0-9]+\.[0-9]+|192\.168\.[0-9]+\.[0-9]+)\b' \
+        docs/site/src/ \
+        --include='*.md' --include='*.mdx' --include='*.html' --include='*.tsx' --include='*.ts' 2>/dev/null; then
+      echo "ERROR: Private IP address(es) leaked into public docs (docs/site/src/)."
+      echo "Remove them or describe the range abstractly (e.g. RFC 5737 doc ranges"
+      echo "203.0.113.0/24, 198.51.100.0/24)."
+      exit 1
+    fi
+
+    echo "    Markdown lint, mermaid, build, link check..."
+    # The link checker (validate:links) scans the BUILT html in dist/, so
+    # order matters: markdownlint -> mermaid -> build -> links. `astro
+    # build` alone does not catch broken internal links.
+    npx --yes markdownlint-cli2 "docs/**/*.md" "docs/**/*.mdx" \
+      "!docs/site/node_modules/**" "!docs/site/dist/**" || {
+      echo "ERROR: Markdown lint failed."
+      exit 1
+    }
+    (
+      cd "$REPO_ROOT/docs/site" || exit 1
+      npm run validate:mermaid || { echo "ERROR: Mermaid validation failed."; exit 1; }
+      npm run build >/dev/null 2>&1 || { echo "ERROR: Astro build failed."; exit 1; }
+      npm run validate:links || { echo "ERROR: Broken internal docs link(s)."; exit 1; }
+    ) || exit 1
+    cd "$REPO_ROOT"
+  else
+    echo "ERROR: docs/ changed but docs/site/node_modules is missing;"
+    echo "       cannot validate docs locally. Install with: cd docs/site && npm ci"
+    echo "       (refusing to skip: a missing-deps skip is how broken docs reach CI)"
+    exit 1
+  fi
+else
+  echo "  [5/6] No staged changes under docs/, skipping docs validation."
+fi
+
+echo "  [6/6] Done."
+echo "Pre-commit checks passed."

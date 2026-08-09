@@ -1,0 +1,35 @@
+---
+title: Project Docs
+description: Replace this with a real description in astro.config.mjs and here.
+template: splash
+hero:
+  tagline: Replace this tagline. This page is the docs site's homepage.
+  image:
+    file: ../../assets/logo.svg
+  actions:
+    - text: Get started
+      link: /project/guides/overview/
+      icon: right-arrow
+      variant: primary
+    - text: View on GitHub
+      link: https://github.com/your-username/your-repo
+      icon: github
+      variant: secondary
+---
+
+import { Card, CardGrid, LinkCard } from "@astrojs/starlight/components";
+
+## Where to start
+
+<CardGrid>
+  <LinkCard
+    title="Style guide"
+    href="/project/development/style-guide/"
+    description="The colour tokens, grey scale, and typography this project is built from."
+  />
+  <LinkCard
+    title="Component kitchen sink"
+    href="/project/development/components/"
+    description="Live, interactive UI primitives built from those tokens."
+  />
+</CardGrid>

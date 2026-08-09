@@ -1,0 +1,110 @@
+---
+title: Style guide
+description: The colour tokens, grey scale, and typography this project is built from, so new UI stays visually consistent without guessing.
+---
+
+import ColorSwatches from "@docs/components/ColorSwatches.astro";
+import Source from "@docs/components/Source.astro";
+
+This page documents the design tokens. For live, interactive UI primitives (buttons, menus, status indicators), see the [component kitchen sink](../components/) instead. This page is about colour, type, and spacing; that one is about components built from them.
+
+**These are placeholder values.** Replace them with your project's real palette in `docs/site/src/styles/custom.css`, then update the swatches below to match. Keep the shape (a documented grey scale plus a small set of meaning-carrying semantic colours) even if every actual value changes.
+
+<Source path="docs/site/src/styles/custom.css" label="docs/site/src/styles/custom.css" />
+
+## Grey scale
+
+Eleven steps. Give each one a documented purpose (not just a number) so a future contributor knows which shade to reach for without guessing at contrast ratios by eye.
+
+<ColorSwatches
+  columns={4}
+  swatches={[
+    { name: "strong", cssVar: "--gray-50", rgb: "255 255 255", note: "pure white, high-emphasis headings" },
+    { name: "primary", cssVar: "--gray-100", rgb: "241 245 249", note: "primary text" },
+    { name: "secondary", cssVar: "--gray-200", rgb: "214 224 236", note: "strong secondary text" },
+    { name: "default", cssVar: "--gray-300", rgb: "182 196 212", note: "body text" },
+    { name: "label", cssVar: "--gray-400", rgb: "152 165 182", note: "secondary labels" },
+    { name: "muted", cssVar: "--gray-500", rgb: "122 135 152", note: "muted labels" },
+    { name: "subtle", cssVar: "--gray-600", rgb: "78 90 106", note: "disabled/decorative" },
+    { name: "divider", cssVar: "--gray-700", rgb: "52 64 80", note: "subtle borders" },
+    { name: "panel", cssVar: "--gray-800", rgb: "30 41 55", note: "panel backgrounds" },
+    { name: "surface", cssVar: "--gray-900", rgb: "15 23 38", note: "surface backgrounds" },
+    { name: "page", cssVar: "--gray-950", rgb: "3 7 18", note: "page background" },
+  ]}
+/>
+
+## Semantic status colours
+
+Meaning-carrying colours, named for what they mean rather than what they look like, so a colour can change without renaming every usage.
+
+<ColorSwatches
+  columns={3}
+  swatches={[
+    { name: "success", cssVar: "--semantic-success", rgb: "52 211 153" },
+    { name: "error", cssVar: "--semantic-error", rgb: "248 113 113" },
+    { name: "warning", cssVar: "--semantic-warning", rgb: "245 158 11" },
+    { name: "info", cssVar: "--semantic-info", rgb: "56 189 248" },
+    { name: "neutral", cssVar: "--semantic-neutral", rgb: "156 163 175" },
+  ]}
+/>
+
+## Chart chrome
+
+Grid lines, axes, and tooltip surfaces for anything built with a charting library or canvas. Not for data series themselves; those should use the semantic palette above, one colour per series category, consistently across every chart that shows it.
+
+<ColorSwatches
+  columns={4}
+  swatches={[
+    { name: "grid", cssVar: "--chart-grid", rgb: "31 41 55" },
+    { name: "axis", cssVar: "--chart-axis", rgb: "107 114 128" },
+    { name: "tooltip-bg", cssVar: "--chart-tooltip-bg", rgb: "17 24 39" },
+    { name: "tooltip-border", cssVar: "--chart-tooltip-border", rgb: "55 65 81" },
+  ]}
+/>
+
+## Typography
+
+Pick one approach and document it here, whatever it ends up being: a single font stack for density, a heading scale for a content-heavy site, a monospace-everywhere convention for a data-dense tool. This section exists so the choice is written down once instead of re-decided per component.
+
+```css
+font-family: system-ui, -apple-system, sans-serif;
+```
+
+## Theme variants
+
+If you support more than one theme (dark, light, high-contrast), redefine every token above per theme rather than assuming the default. Components should always read a token, never hardcode an RGB triplet; a hardcoded value breaks silently in every other theme.
+
+## Using tokens in code
+
+**CSS custom properties** (works everywhere: Tailwind, plain CSS, inline styles):
+
+```css
+.card {
+  background: rgb(var(--gray-800));
+  border: 1px solid rgb(var(--gray-700));
+  color: rgb(var(--gray-100));
+}
+```
+
+**Raw values at runtime** (canvas, inline SVG `fill=`, anything that needs a real string, not a CSS declaration):
+
+```ts
+function rgb(name: string, alpha = 1): string {
+  const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const triplet = raw.replace(/ /g, ", ");
+  return alpha === 1 ? `rgb(${triplet})` : `rgba(${triplet}, ${alpha})`;
+}
+
+rgb("--semantic-success");
+```
+
+Read the live CSS variable on each access rather than caching a resolved value in a module-level constant, so the result follows a theme switch.
+
+## Docs site tokens
+
+The Astro docs site (this site) keeps its own copy of the palette in `docs/site/src/styles/custom.css`. If your app has a separate frontend, decide up front whether the two stay identical (simplest: literally the same file, symlinked or copied by a build step) or are allowed to diverge (cheaper short-term, but the docs site's swatches will silently stop describing the app's actual colours unless something checks for drift). Whichever you choose, say so on this page, since the wrong assumption here is exactly the kind of thing that goes unnoticed for months.
+
+## Related
+
+- [Component kitchen sink](../components/): live, interactive primitives built from these tokens
+- [Component dependency graph](../components/component-dependency-graph/): what imports what

@@ -1,0 +1,41 @@
+---
+title: Badge
+description: Small status pill using the semantic colour tokens.
+---
+
+import { Badge } from "@app/frontend/components/Badge";
+import Source from "@docs/components/Source.astro";
+
+A small inline pill for showing status: success, error, warning, info, or neutral. Reads its colours from the semantic tokens documented in the [style guide](../../style-guide/), so it stays in sync if those change.
+
+This is the example primitive the bootstrap ships with, to prove the live-import pattern works end to end before you add your project's real components.
+
+## Live demo
+
+<div className="not-content" style={{ display: "flex", gap: "0.75rem", alignItems: "center", padding: "1rem", background: "rgb(15 23 38)", borderRadius: "8px" }}>
+  <Badge client:load status="success">success</Badge>
+  <Badge client:load status="error">error</Badge>
+  <Badge client:load status="warning">warning</Badge>
+  <Badge client:load status="info">info</Badge>
+  <Badge client:load status="neutral">neutral</Badge>
+</div>
+
+## Props
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `status` | `"success" \| "error" \| "warning" \| "info" \| "neutral"` | (none) | Required. Drives the badge's colour. |
+| `children` | `React.ReactNode` | (none) | Required. The badge's label. |
+| `className` | `string` | `""` | Extra Tailwind classes. |
+
+## Import
+
+```tsx
+import { Badge } from "@app/frontend/components/Badge";
+
+<Badge status="success">Deployed</Badge>
+```
+
+## Source
+
+<Source path="frontend/src/components/Badge.tsx" label="Badge.tsx" />

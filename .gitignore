@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.astro/
+*.log
+.DS_Store
+.env
+.env.local
+docs/site/.npm-ci-lock.sha256
+.npm-ci-lock.sha256

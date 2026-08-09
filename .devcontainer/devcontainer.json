@@ -1,0 +1,56 @@
+{
+  "name": "Project Dev Container",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "workspaceFolder": "/workspaces/project",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/project,type=bind,consistency=cached",
+  "forwardPorts": [3000, 4321],
+  "portsAttributes": {
+    "3000": {
+      "label": "App",
+      "onAutoForward": "notify",
+      "protocol": "http"
+    },
+    "4321": {
+      "label": "Docs site (Astro dev server)",
+      "onAutoForward": "notify",
+      "protocol": "http"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "security.workspace.trust.startupPrompt": "never",
+        "extensions.autoUpdate": false,
+        "extensions.autoCheckUpdates": false
+      },
+      "extensions": [
+        "anthropic.claude-code",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "eamodio.gitlens",
+        "ms-azuretools.vscode-docker",
+        "redhat.vscode-yaml",
+        "yzhang.markdown-all-in-one",
+        "ms-playwright.playwright",
+        "yoavbls.pretty-ts-errors",
+        "usernamehw.errorlens"
+      ]
+    }
+  },
+  "initializeCommand": "mkdir -p $HOME/.ssh $HOME/.config/gh $HOME/.claude && touch $HOME/.gitconfig",
+  "remoteUser": "node",
+  "userEnvProbe": "none",
+  "mounts": [
+    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind",
+    "source=${localEnv:HOME}/.ssh,target=/home/node/.ssh,type=bind,consistency=cached",
+    "source=${localEnv:HOME}/.config/gh,target=/home/node/.config/gh,type=bind,consistency=cached",
+    "source=${localEnv:HOME}/.gitconfig,target=/home/node/.gitconfig,type=bind,consistency=cached",
+    "source=${localEnv:HOME}/.claude,target=/home/node/.claude,type=bind,consistency=cached"
+  ],
+  "postCreateCommand": "CONTAINER_WORKSPACE_FOLDER=${containerWorkspaceFolder} bash ${containerWorkspaceFolder}/.devcontainer/post-create.sh",
+  "postStartCommand": "CONTAINER_WORKSPACE_FOLDER=${containerWorkspaceFolder} bash ${containerWorkspaceFolder}/.devcontainer/post-start.sh"
+}

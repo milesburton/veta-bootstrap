@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Design tokens. See docs/site/src/content/docs/development/style-guide.mdx
+   for the documented, swatch-rendered version of this file, keep both in
+   sync, or write down explicitly that they're allowed to diverge (the style
+   guide has a section on this exact decision). */
+:root,
+[data-theme="dark"] {
+	--gray-50: 255 255 255; /* pure white, high-emphasis headings */
+	--gray-100: 241 245 249; /* primary text (~18:1 on 950) */
+	--gray-200: 214 224 236; /* strong secondary text (~12:1) */
+	--gray-300: 182 196 212; /* body / value text (~8:1) */
+	--gray-400: 152 165 182; /* secondary labels (~5.5:1) */
+	--gray-500: 142 156 175; /* muted labels (AA on panel) */
+	--gray-600: 78 90 106; /* disabled / decorative, fails AA by design */
+	--gray-700: 52 64 80; /* subtle borders */
+	--gray-800: 30 41 55; /* panel backgrounds */
+	--gray-900: 15 23 38; /* surface backgrounds */
+	--gray-950: 3 7 18; /* page background */
+
+	--semantic-success: 52 211 153;
+	--semantic-success-dark: 5 150 105;
+	--semantic-error: 248 113 113;
+	--semantic-error-dark: 220 38 38;
+	--semantic-warning: 245 158 11;
+	--semantic-info: 56 189 248;
+	--semantic-neutral: 156 163 175;
+
+	--chart-grid: 31 41 55;
+	--chart-axis: 107 114 128;
+	--chart-tooltip-bg: 17 24 39;
+	--chart-tooltip-border: 55 65 81;
+}
+
+[data-theme="light"] {
+	--gray-50: 15 23 38;
+	--gray-100: 30 41 55;
+	--gray-200: 52 64 80;
+	--gray-300: 78 90 106;
+	--gray-400: 122 135 152;
+	--gray-500: 152 165 182;
+	--gray-600: 182 196 212;
+	--gray-700: 214 224 236;
+	--gray-800: 241 245 249;
+	--gray-900: 249 250 251;
+	--gray-950: 255 255 255;
+
+	/* Semantic and chart tokens are unchanged across themes for now; tune
+     these if the light theme needs different contrast. */
+}
