@@ -38,7 +38,9 @@ Then:
    [the style guide](docs/site/src/content/docs/development/style-guide.mdx)
    for the shape to fill in).
 2. Update `docs/site/astro.config.mjs`: site title, description, sidebar,
-   and `DOCS_REPO_URL`.
+   `DOCS_REPO_URL`, and `docsBase` (must match your repo name for GitHub
+   Pages project sites, e.g. `/your-repo-name`, or every base-relative
+   asset 404s once deployed even though the build succeeds locally).
 3. Set the `BOT_PAT` repo secret if you want `trusted-automerge.yml` to
    work (see "CI workflows" below); delete the workflow if you don't.
 4. `pages.yml` only deploys if the repo is public or you have GitHub

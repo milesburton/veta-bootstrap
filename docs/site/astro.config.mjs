@@ -13,8 +13,10 @@ const frontendSrc = fileURLToPath(
 
 // GitHub Pages project sites need a base path matching the repo name
 // (https://<user>.github.io/<repo>/); a custom domain or root deploy target
-// should set this to "/".
-const docsBase = "/project";
+// should set this to "/". Get this wrong and every base-relative asset
+// (favicon, logo, internal links) 404s on the deployed site even though
+// the build succeeds locally, since the dev server ignores base mismatches.
+const docsBase = "/veta-bootstrap";
 
 const docsNodeModules = fileURLToPath(
   new URL("./node_modules", import.meta.url),
